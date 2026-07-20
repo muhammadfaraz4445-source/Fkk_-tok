@@ -36,33 +36,39 @@ jobs:
         run: npm install -g cordova
 
       - name: Install Project Dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
+
+      - name: Inject Exact AdMob IDs
+        run: |
+          node -e '
+            const fs = require("fs");
+            const replaceInFile = (filePath, search, replacement) => {
+              if (fs.existsSync(filePath)) {
+                let content = fs.readFileSync(filePath, "utf8");
+                content = content.replaceAll(search, replacement);
+                fs.writeFileSync(filePath, content, "utf8");
+              }
+            };
+
+            const appId = "ca-app-pub-9275319584599936~2082703007";
+            const bannerId = "ca-app-pub-9275319584599936/4158202000";
+            const interstitialId = "ca-app-pub-9275319584599936/8947494259";
+
+            replaceInFile("config.xml", "ca-app-pub-9275319584599936~2082703007", appId);
+            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/4158202000", bannerId);
+            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/8947494259", interstitialId);
+            replaceInFile("src/App.tsx", "ca-app-pub-9275319584599936/4158202000", bannerId);
+            replaceInFile("src/App.tsx", "ca-app-pub-9275319584599936/8947494259", interstitialId);
+          '
 
       - name: Accept Android SDK Licenses
         run: |
           yes | sdkmanager --licenses || true
 
-      - name: Inject AdMob IDs from Secrets
-        run: |
-          if [ ! -z "${{ secrets.ADMOB_APP_ID }}" ]; then
-            echo "Injecting ADMOB_APP_ID..."
-            sed -i "s/ca-app-pub-9275319584599936~2082703007/${{ secrets.ADMOB_APP_ID }}/g" config.xml
-          fi
-          if [ ! -z "${{ secrets.ADMOB_BANNER_ID }}" ]; then
-            echo "Injecting ADMOB_BANNER_ID..."
-            sed -i "s/ca-app-pub-9275319584599936\/4158202000/${{ secrets.ADMOB_BANNER_ID }}/g" www/js/index.js
-            sed -i "s/ca-app-pub-9275319584599936\/4158202000/${{ secrets.ADMOB_BANNER_ID }}/g" src/App.tsx || true
-          fi
-          if [ ! -z "${{ secrets.ADMOB_INTERSTITIAL_ID }}" ]; then
-            echo "Injecting ADMOB_INTERSTITIAL_ID..."
-            sed -i "s/ca-app-pub-9275319584599936\/8947494259/${{ secrets.ADMOB_INTERSTITIAL_ID }}/g" www/js/index.js
-            sed -i "s/ca-app-pub-9275319584599936\/8947494259/${{ secrets.ADMOB_INTERSTITIAL_ID }}/g" src/App.tsx || true
-          fi
-
-      - name: Add Android Platform
+      - name: Add Android Platform Cleanly
         run: |
           rm -rf platforms/android
-          cordova platform add android --nosave
+          cordova platform add android@12.0.0 --nosave
 
       - name: Build Android App (Debug)
         run: |
