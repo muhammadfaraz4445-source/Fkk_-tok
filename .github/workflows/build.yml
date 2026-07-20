@@ -1,4 +1,4 @@
-name: Check Installed Cordova Plugins
+name: Build Cordova Mobile App
 
 on:
   push:
@@ -6,11 +6,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  check-plugins:
+  build-android:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -23,12 +35,52 @@ jobs:
       - name: Install Project Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: List Installed Plugins
+      - name: Clean Broken & Old Plugin Files
         run: |
-          echo "=== INSTALLED CORDOVA PLUGINS ==="
-          cordova plugin list || true
+          echo "=== REMOVING OLD BROKEN ADMOB FILES ==="
+          rm -rf platforms/
+          rm -rf plugins/
+          rm -rf src/android/com/rjfun/
+          rm -rf www/js/AdMob.js || true
 
-      - name: Check package.json Plugins
+      - name: Inject AdMob IDs & Settings
         run: |
-          echo "=== PACKAGE.JSON DEPENDENCIES ==="
-          cat package.json || true
+          node -e '
+            const fs = require("fs");
+            const replaceInFile = (filePath, search, replacement) => {
+              if (fs.existsSync(filePath)) {
+                let content = fs.readFileSync(filePath, "utf8");
+                content = content.replaceAll(search, replacement);
+                fs.writeFileSync(filePath, content, "utf8");
+              }
+            };
+
+            const appId = "ca-app-pub-9275319584599936~2082703007";
+            const bannerId = "ca-app-pub-9275319584599936/4158202000";
+            const interstitialId = "ca-app-pub-9275319584599936/8947494259";
+
+            replaceInFile("config.xml", "ca-app-pub-9275319584599936~2082703007", appId);
+            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/4158202000", bannerId);
+            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/8947494259", interstitialId);
+          '
+
+      - name: Add Fresh Android Platform
+        run: |
+          cordova platform add android@12.0.0
+
+      - name: Override Gradle SDK Target to 34
+        run: |
+          echo "cdvCompileSdkVersion=34" >> platforms/android/gradle.properties
+          echo "cdvTargetSdkVersion=34" >> platforms/android/gradle.properties
+
+      - name: Build Android APK
+        env:
+          CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL: "https://services.gradle.org/distributions/gradle-8.7-bin.zip"
+        run: |
+          cordova build android --debug
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: cordova-android-apk
+          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
