@@ -35,13 +35,25 @@ jobs:
       - name: Install Project Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Force Delete All Old AdMob Code & Platforms
+      - name: Remove Old AdMob References from config.xml
         run: |
-          echo "=== FORCE DELETING BROKEN ADMOB SOURCE FILES ==="
+          echo "=== REMOVING ADMOB PRO PLUGINS FROM CONFIG.XML ==="
+          node -e '
+            const fs = require("fs");
+            if (fs.existsSync("config.xml")) {
+              let content = fs.readFileSync("config.xml", "utf8");
+              // Strip plugin tags related to admobpro/rjfun
+              content = content.replace(/<plugin[^>]*admobpro[^>]*\/>/gi, "");
+              content = content.replace(/<plugin[^>]*admobpro[^>]*>[\s\S]*?<\/plugin>/gi, "");
+              content = content.replace(/<feature[^>]*AdMob[^>]*>[\s\S]*?<\/feature>/gi, "");
+              fs.writeFileSync("config.xml", content, "utf8");
+            }
+          '
+
+      - name: Clean Temporary Directories
+        run: |
           rm -rf platforms/
           rm -rf plugins/
-          find . -type f -name "AdMobPlugin.java" -exec rm -vf {} +
-          find . -type d -name "rjfun" -exec rm -rvf {} +
 
       - name: Inject AdMob IDs & Settings
         run: |
@@ -78,6 +90,12 @@ jobs:
           echo "cdvBuildToolsVersion=33.0.2" >> platforms/android/gradle.properties
           echo "cdvCompileSdkVersion=34" >> platforms/android/gradle.properties
           echo "cdvTargetSdkVersion=34" >> platforms/android/gradle.properties
+
+      - name: Purge Legacy AdMob Java Files Right Before Build
+        run: |
+          echo "=== ABSOLUTE PURGE OF ADMOB PLUGIN JAVA FILES ==="
+          find . -type f -name "AdMobPlugin.java" -delete
+          find . -type d -name "rjfun" -exec rm -rf {} + || true
 
       - name: Build Android APK
         env:
