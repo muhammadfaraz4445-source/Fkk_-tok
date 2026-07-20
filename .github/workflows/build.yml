@@ -32,46 +32,33 @@ jobs:
       - name: Install Cordova CLI
         run: npm install -g cordova@12.0.0
 
-      - name: Install Project Dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Remove Old AdMob References from config.xml
+      - name: Clean Config XML & Remove Broken AdMob Plugins
         run: |
-          echo "=== REMOVING ADMOB PRO PLUGINS FROM CONFIG.XML ==="
-          node -e '
-            const fs = require("fs");
-            if (fs.existsSync("config.xml")) {
-              let content = fs.readFileSync("config.xml", "utf8");
-              content = content.replace(/<plugin[^>]*admobpro[^>]*\/>/gi, "");
-              content = content.replace(/<plugin[^>]*admobpro[^>]*>[\s\S]*?<\/plugin>/gi, "");
-              content = content.replace(/<feature[^>]*AdMob[^>]*>[\s\S]*?<\/feature>/gi, "");
-              fs.writeFileSync("config.xml", content, "utf8");
-            }
-          '
-
-      - name: Clean Temporary Directories
-        run: |
+          echo "=== CLEANING CONFIG AND BROKEN PLUGINS ==="
           rm -rf platforms/
           rm -rf plugins/
+          
+          # Clean config.xml from deprecated AdMob references
+          if [ -f config.xml ]; then
+            sed -i '/admobpro/d' config.xml
+            sed -i '/com.rjfun.cordova.admob/d' config.xml
+            sed -i '/cordova-plugin-admobpro/d' config.xml
+          fi
 
-      - name: Safe JS Inject (Prevent AdMob Crash)
+      - name: Clean JS Code from AdMob Calls (Prevent App Crash)
         run: |
-          node -e '
-            const fs = require("fs");
-            if (fs.existsSync("www/js/index.js")) {
-              let content = fs.readFileSync("www/js/index.js", "utf8");
-              // Safely handle AdMob plugin calls so JS doesn't crash the app
-              content = content.replace(/window\.plugins\.AdMob/g, "(window.plugins && window.plugins.AdMob)");
-              content = content.replace(/AdMob\./g, "window.AdMob && AdMob.");
-              fs.writeFileSync("www/js/index.js", content, "utf8");
-            }
-          '
+          echo "=== CLEANING JS FROM CRASHING ADMOB CALLS ==="
+          if [ -f www/js/index.js ]; then
+            # Comment out AdMob calls so the app runs smoothly without crashing
+            sed -i 's/AdMob\./\/\/ AdMob\./g' www/js/index.js
+            sed -i 's/window\.plugins\.AdMob/\/\/ window\.plugins\.AdMob/g' www/js/index.js
+          fi
 
       - name: Add Fresh Android Platform
         run: |
           cordova platform add android@12.0.0
 
-      - name: Install Android Build Tools 33.0.2
+      - name: Install Android SDK & Build Tools 33.0.2
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33" "platforms;android-34"
@@ -83,9 +70,9 @@ jobs:
           echo "cdvTargetSdkVersion=34" >> platforms/android/gradle.properties
           echo "cdvMinSdkVersion=24" >> platforms/android/gradle.properties
 
-      - name: Purge Legacy AdMob Java Files
+      - name: Purge Broken Java Plugin Source Files
         run: |
-          echo "=== PURGING ADMOB JAVA FILES ==="
+          echo "=== PURGING BROKEN JAVA SOURCE FILES ==="
           find . -type f -name "AdMobPlugin.java" -delete
           find . -type d -name "rjfun" -exec rm -rf {} + || true
 
