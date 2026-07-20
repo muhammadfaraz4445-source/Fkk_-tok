@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.aistudio.shortvideoadmob" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Cordova Short Video App</name>
+    <description>
+        A sleek mobile app featuring full-screen short vertical videos with AdMob banner and interstitial ads, fully ready for Cordova and GitHub Actions builds.
+    </description>
+    <author email="muhammadfaraz4445@gmail.com" href="https://ai.studio/build">
+        AI Studio Developer
+    </author>
+    
+    <!-- Cordova App Entry Point -->
+    <content src="index.html" />
+    
+    <!-- Platform Configurations -->
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="tel:*" />
+    <allow-intent href="sms:*" />
+    <allow-intent href="mailto:*" />
+    <allow-intent href="geo:*" />
+
+    <platform name="android">
+        <allow-intent href="market:*" />
+        <preference name="KeepRunning" value="true" />
+    </platform>
+    
+    <platform name="ios">
+        <allow-intent href="itms:*" />
+        <allow-intent href="itms-apps:*" />
+    </platform>
+
+    <!-- UI Preferences for Modern Mobile Layout -->
+    <preference name="Fullscreen" value="true" />
+    <preference name="StatusBarOverlaysWebView" value="true" />
+    <preference name="StatusBarStyle" value="lightcontent" />
+    <preference name="DisallowOverscroll" value="true" />
+    <preference name="Orientation" value="portrait" />
+
+    <!-- Google AdMob Plus Plugin Configuration -->
+    <!-- You can replace these App IDs with your actual production AdMob App IDs -->
+    <plugin name="cordova-plugin-admob-plus" spec="^2.0.0">
+        <variable name="APP_ID_ANDROID" value="ca-app-pub-3940256099942544~3347511713" />
+        <variable name="APP_ID_IOS" value="ca-app-pub-3940256099942544~1458002511" />
+    </plugin>
+    
+    <!-- Additional standard plugins for optimal webview performance and gestures -->
+    <plugin name="cordova-plugin-statusbar" spec="^3.0.0" />
+    <plugin name="cordova-plugin-splashscreen" spec="^6.0.0" />
+</widget>

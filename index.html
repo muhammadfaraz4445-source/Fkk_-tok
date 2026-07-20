@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Short Video App</title>
+    <!-- CSS imports -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app-container" class="app-container">
+        <!-- Top Navigation Headers -->
+        <header class="app-header">
+            <div class="header-tab text-muted">Following</div>
+            <div class="header-tab active">For You</div>
+            <div class="header-search-btn" id="search-trigger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+        </header>
+
+        <!-- Dynamic Hashtag Discovery Bar -->
+        <div class="hashtag-scroller" id="hashtag-bar">
+            <div class="hashtag-pill active" data-hashtag="all">🔥 Trending</div>
+            <div class="hashtag-pill" data-hashtag="cyberpunk">#cyberpunk</div>
+            <div class="hashtag-pill" data-hashtag="coding">#coding</div>
+            <div class="hashtag-pill" data-hashtag="nature">#nature</div>
+            <div class="hashtag-pill" data-hashtag="design">#design</div>
+        </div>
+
+        <!-- Vertical Full-Screen Video Feed (Scroll-Snap Enabled) -->
+        <main class="video-feed" id="video-feed">
+            <!-- Dynamic Video slides will be injected here by index.js -->
+            <!-- fallback/initial loading screen -->
+            <div class="loading-screen" id="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading curated videos...</p>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="bottom-nav" id="bottom-nav">
+            <div class="nav-item active" id="nav-home">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="m12 3-10 9h3v8h14v-8h3L12 3z"/></svg>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" id="nav-discover">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16.2 7.8l-2 5.6-5.6 2 2-5.6 5.6-2z"/></svg>
+                <span>Discover</span>
+            </div>
+            <div class="nav-item nav-upload" id="nav-add">
+                <div class="upload-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+            </div>
+            <div class="nav-item" id="nav-inbox">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <div class="badge">2</div>
+                <span>Inbox</span>
+            </div>
+            <div class="nav-item" id="nav-profile">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Profile</span>
+            </div>
+        </nav>
+
+        <!-- Bottom Sheet: Interactive Comments Drawer -->
+        <div class="drawer-overlay" id="drawer-overlay"></div>
+        <div class="comments-drawer" id="comments-drawer">
+            <div class="drawer-header">
+                <div class="drawer-notch"></div>
+                <h3>Comments (<span id="drawer-comment-count">0</span>)</h3>
+                <button class="close-btn" id="close-comments-btn">&times;</button>
+            </div>
+            <div class="comments-list" id="comments-list">
+                <!-- Comments injected dynamically -->
+            </div>
+            <div class="comment-input-area">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&fit=crop&q=80" alt="Avatar" class="user-avatar-sm">
+                <input type="text" id="new-comment-input" placeholder="Add comment...">
+                <button id="post-comment-btn">Post</button>
+            </div>
+        </div>
+
+        <!-- Custom Search Modal -->
+        <div class="search-modal" id="search-modal">
+            <div class="search-header">
+                <input type="text" id="search-input" placeholder="Search creators, hashtags, sounds...">
+                <button class="search-cancel" id="search-cancel-btn">Cancel</button>
+            </div>
+            <div class="search-body">
+                <h4>Trending Tags</h4>
+                <div class="trending-tags-grid">
+                    <div class="tag-item">#coding</div>
+                    <div class="tag-item">#cyberpunk</div>
+                    <div class="tag-item">#nature</div>
+                    <div class="tag-item">#design</div>
+                    <div class="tag-item">#tech</div>
+                    <div class="tag-item">#lofi</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interstitial Ad Trigger Indicator Overlay (Shown during mock loading) -->
+        <div class="ad-overlay" id="ad-overlay">
+            <div class="ad-box">
+                <div class="spinner green-spinner"></div>
+                <h4>Loading Google AdMob Ad...</h4>
+                <p>Simulating Interstitial Ad Experience</p>
+                <button class="ad-skip-btn" id="close-ad-overlay-btn" style="display:none;">Close Ad</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apache Cordova Script Integration -->
+    <script src="cordova.js"></script>
+    <!-- Application Main Script -->
+    <script src="js/index.js"></script>
+</body>
+</html>
