@@ -38,13 +38,12 @@
     <preference name="Orientation" value="portrait" />
 
     <!-- Google AdMob Plus Plugin Configuration -->
-    <!-- You can replace these App IDs with your actual production AdMob App IDs -->
-    <plugin name="cordova-plugin-admob-plus" spec="^2.0.0">
+    <plugin name="cordova-plugin-admob-plus">
         <variable name="APP_ID_ANDROID" value="ca-app-pub-3940256099942544~3347511713" />
         <variable name="APP_ID_IOS" value="ca-app-pub-3940256099942544~1458002511" />
     </plugin>
     
     <!-- Additional standard plugins for optimal webview performance and gestures -->
-    <plugin name="cordova-plugin-statusbar" spec="^3.0.0" />
-    <plugin name="cordova-plugin-splashscreen" spec="^6.0.0" />
+    <plugin name="cordova-plugin-statusbar" />
+    <plugin name="cordova-plugin-splashscreen" />
 </widget>
