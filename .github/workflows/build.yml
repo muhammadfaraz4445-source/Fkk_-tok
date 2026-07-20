@@ -22,27 +22,26 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Cordova and Dependencies
-        run: |
-          npm install -g cordova
-          npm install --no-audit --no-fund
+      - name: Install Cordova
+        run: npm install -g cordova
 
       - name: Add Android Platform
-        run: |
-          cordova platform add android --nosave
+        run: cordova platform add android --nosave
 
       - name: Build Android App (Debug)
         env:
           ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
           ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
           ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
-        run: |
-          cordova build android --no-telemetry --device
+        run: cordova build android --no-telemetry --device
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
