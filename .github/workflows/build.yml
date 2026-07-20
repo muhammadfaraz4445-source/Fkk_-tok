@@ -22,26 +22,47 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
+          cache: 'npm'
 
       - name: Install Cordova
         run: npm install -g cordova
 
+      - name: Install Project Dependencies
+        run: |
+          npm ci || npm install --legacy-peer-deps
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses || true
+
+      - name: Inject AdMob IDs from Secrets
+        run: |
+          if [ ! -z "${{ secrets.ADMOB_APP_ID }}" ]; then
+            echo "Injecting ADMOB_APP_ID..."
+            sed -i "s/ca-app-pub-3940256099942544~3347511713/${{ secrets.ADMOB_APP_ID }}/g" config.xml
+          fi
+          if [ ! -z "${{ secrets.ADMOB_BANNER_ID }}" ]; then
+            echo "Injecting ADMOB_BANNER_ID..."
+            sed -i "s/ca-app-pub-3940256099942544\/6300978111/${{ secrets.ADMOB_BANNER_ID }}/g" www/js/index.js
+            sed -i "s/ca-app-pub-3940256099942544\/6300978111/${{ secrets.ADMOB_BANNER_ID }}/g" src/App.tsx || true
+          fi
+          if [ ! -z "${{ secrets.ADMOB_INTERSTITIAL_ID }}" ]; then
+            echo "Injecting ADMOB_INTERSTITIAL_ID..."
+            sed -i "s/ca-app-pub-3940256099942544\/1033173712/${{ secrets.ADMOB_INTERSTITIAL_ID }}/g" www/js/index.js
+            sed -i "s/ca-app-pub-3940256099942544\/1033173712/${{ secrets.ADMOB_INTERSTITIAL_ID }}/g" src/App.tsx || true
+          fi
+
       - name: Add Android Platform
-        run: cordova platform add android --nosave
+        run: |
+          cordova platform add android --nosave
 
       - name: Build Android App (Debug)
-        env:
-          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
-          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
-          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
-        run: cordova build android --no-telemetry --device
+        run: |
+          cordova build android --no-telemetry --device
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
