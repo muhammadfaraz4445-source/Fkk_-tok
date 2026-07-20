@@ -3,6 +3,8 @@ name: Build Cordova Mobile App
 on:
   push:
     branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -17,25 +19,55 @@ jobs:
       - name: Set up Java Development Kit (JDK) 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
 
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '18'
+          cache: 'npm'
 
-      - name: Install Cordova CLI
-        run: npm install -g cordova@12.0.0
+      - name: Install Cordova
+        run: npm install -g cordova
 
-      - name: Clean & Prepare Cordova Android Platform
+      - name: Install Project Dependencies
         run: |
-          rm -rf platforms/android
-          cordova platform add android@12.0.0
-          cordova prepare
+          npm ci || npm install --legacy-peer-deps
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses || true
+
+      - name: Inject AdMob IDs from Secrets
+        run: |
+          if [ ! -z "${{ secrets.ADMOB_APP_ID }}" ]; then
+            echo "Injecting ADMOB_APP_ID..."
+            sed -i "s/ca-app-pub-9275319584599936~2082703007/${{ secrets.ADMOB_APP_ID }}/g" config.xml
+          fi
+          if [ ! -z "${{ secrets.ADMOB_BANNER_ID }}" ]; then
+            echo "Injecting ADMOB_BANNER_ID..."
+            sed -i "s/ca-app-pub-9275319584599936\/4158202000/${{ secrets.ADMOB_BANNER_ID }}/g" www/js/index.js
+            sed -i "s/ca-app-pub-9275319584599936\/4158202000/${{ secrets.ADMOB_BANNER_ID }}/g" src/App.tsx || true
+          fi
+          if [ ! -z "${{ secrets.ADMOB_INTERSTITIAL_ID }}" ]; then
+            echo "Injecting ADMOB_INTERSTITIAL_ID..."
+            sed -i "s/ca-app-pub-9275319584599936\/8947494259/${{ secrets.ADMOB_INTERSTITIAL_ID }}/g" www/js/index.js
+            sed -i "s/ca-app-pub-9275319584599936\/8947494259/${{ secrets.ADMOB_INTERSTITIAL_ID }}/g" src/App.tsx || true
+          fi
+
+      - name: Add Android Platform
+        run: |
+          cordova platform add android --nosave
 
       - name: Build Android App (Debug)
-        run: cordova build android --debug
+        run: |
+          cordova build android --no-telemetry --device
 
       - name: Upload Android APK
         uses: actions/upload-artifact@v4
