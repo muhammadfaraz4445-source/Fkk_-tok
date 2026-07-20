@@ -1,4 +1,4 @@
-Name: Build Cordova Mobile App
+name: Build Cordova Mobile App
 
 on:
   push:
