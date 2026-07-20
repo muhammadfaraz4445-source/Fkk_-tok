@@ -35,13 +35,13 @@ jobs:
       - name: Install Project Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Clean Broken & Old Plugin Files
+      - name: Force Delete All Old AdMob Code & Platforms
         run: |
-          echo "=== REMOVING OLD BROKEN ADMOB FILES ==="
+          echo "=== FORCE DELETING BROKEN ADMOB SOURCE FILES ==="
           rm -rf platforms/
           rm -rf plugins/
-          rm -rf src/android/com/rjfun/
-          rm -rf www/js/AdMob.js || true
+          find . -type f -name "AdMobPlugin.java" -exec rm -vf {} +
+          find . -type d -name "rjfun" -exec rm -rvf {} +
 
       - name: Inject AdMob IDs & Settings
         run: |
@@ -68,12 +68,12 @@ jobs:
         run: |
           cordova platform add android@12.0.0
 
-      - name: Install Exact Required Android Build Tools
+      - name: Install Android Build Tools 33.0.2
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33" "platforms;android-34"
 
-      - name: Configure Gradle Build Tools Properties
+      - name: Configure Gradle Properties
         run: |
           echo "cdvBuildToolsVersion=33.0.2" >> platforms/android/gradle.properties
           echo "cdvCompileSdkVersion=34" >> platforms/android/gradle.properties
