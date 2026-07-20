@@ -56,15 +56,23 @@ jobs:
             replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/8947494259", interstitialId);
           '
 
-      - name: Install Required Android Build Tools 33.0.2
-        run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33"
-
       - name: Add Android Platform
         run: |
           cordova platform rm android || true
           cordova platform add android@12.0.0
+
+      - name: Force Android SDK 34 Config
+        run: |
+          node -e '
+            const fs = require("fs");
+            const cdvGradle = "platforms/android/cdv-build-extras.gradle";
+            const content = `
+              ext.cdvCompileSdkVersion = 34
+              ext.cdvTargetSdkVersion = 34
+              ext.cdvBuildToolsVersion = "34.0.0"
+            `;
+            fs.writeFileSync(cdvGradle, content);
+          '
 
       - name: Build Android APK
         env:
