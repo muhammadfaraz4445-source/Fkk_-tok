@@ -1,0 +1,73 @@
+name: Build Cordova Mobile App
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java Development Kit (JDK) 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Cordova and Dependencies
+        run: |
+          npm install -g cordova
+          npm ci || npm install
+
+      - name: Add Android Platform
+        run: |
+          cordova platform add android --nosave
+
+      - name: Build Android App (Debug)
+        run: |
+          cordova build android --no-telemetry --device
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: cordova-android-apk
+          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Cordova and cocoapods
+        run: |
+          npm install -g cordova
+          gem install cocoapods
+
+      - name: Add iOS Platform
+        run: |
+          cordova platform add ios --nosave
+
+      - name: Build iOS App (Simulator / Debug)
+        run: |
+          cordova build ios --no-telemetry --emulator
