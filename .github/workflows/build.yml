@@ -25,13 +25,12 @@ jobs:
       - name: Set up Node.js Environment
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: '20'
 
       - name: Install Cordova and Dependencies
         run: |
           npm install -g cordova
-          npm ci || npm install
+          npm install --no-audit --no-fund
 
       - name: Add Android Platform
         run: |
@@ -50,32 +49,3 @@ jobs:
         with:
           name: cordova-android-apk
           path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
-
-  build-ios:
-    name: Build iOS App
-    runs-on: macos-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js Environment
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: Install Cordova and cocoapods
-        run: |
-          npm install -g cordova
-          gem install cocoapods
-
-      - name: Add iOS Platform
-        run: |
-          cordova platform add ios --nosave
-
-      - name: Build iOS App (Simulator / Debug)
-        env:
-          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
-          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
-          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
-        run: |
-          cordova build ios --no-telemetry --emulator
