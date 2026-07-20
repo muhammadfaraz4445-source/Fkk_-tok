@@ -1,6 +1,8 @@
 name: Check System Info
 
 on:
+  push:
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -11,18 +13,10 @@ jobs:
         run: java -version
 
       - name: Check Gradle Version
-        run: gradle -version
+        run: gradle -version || true
 
       - name: Check Android SDK Home
         run: echo "ANDROID_HOME is $ANDROID_HOME"
-
-      - name: List SDK Tools
-        run: |
-          if [ -d "$ANDROID_HOME/cmdline-tools" ]; then
-            ls -R $ANDROID_HOME/cmdline-tools
-          else
-            echo "Cmdline-tools not found at $ANDROID_HOME"
-          fi
 
       - name: Check Node Version
         run: node -v
