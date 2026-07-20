@@ -35,7 +35,7 @@ jobs:
       - name: Install Project Dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Inject AdMob IDs
+      - name: Inject AdMob IDs & Set SDK Preferences
         run: |
           node -e '
             const fs = require("fs");
@@ -54,6 +54,18 @@ jobs:
             replaceInFile("config.xml", "ca-app-pub-9275319584599936~2082703007", appId);
             replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/4158202000", bannerId);
             replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/8947494259", interstitialId);
+
+            // Force Android Target & Build Tools 34 inside config.xml
+            if (fs.existsSync("config.xml")) {
+              let config = fs.readFileSync("config.xml", "utf8");
+              const prefs = `
+                  <preference name="android-targetSdkVersion" value="34" />
+                  <preference name="android-compileSdkVersion" value="34" />
+                  <preference name="android-buildToolsVersion" value="34.0.0" />
+              </widget>`;
+              config = config.replace("</widget>", prefs);
+              fs.writeFileSync("config.xml", config, "utf8");
+            }
           '
 
       - name: Add Android Platform
@@ -61,18 +73,11 @@ jobs:
           cordova platform rm android || true
           cordova platform add android@12.0.0
 
-      - name: Force Android SDK 34 Config
+      - name: Override Gradle Properties to Force 34
         run: |
-          node -e '
-            const fs = require("fs");
-            const cdvGradle = "platforms/android/cdv-build-extras.gradle";
-            const content = `
-              ext.cdvCompileSdkVersion = 34
-              ext.cdvTargetSdkVersion = 34
-              ext.cdvBuildToolsVersion = "34.0.0"
-            `;
-            fs.writeFileSync(cdvGradle, content);
-          '
+          echo "cdvCompileSdkVersion=34" >> platforms/android/gradle.properties
+          echo "cdvTargetSdkVersion=34" >> platforms/android/gradle.properties
+          echo "cdvBuildToolsVersion=34.0.0" >> platforms/android/gradle.properties
 
       - name: Build Android APK
         env:
