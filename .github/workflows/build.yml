@@ -42,7 +42,6 @@ jobs:
             const fs = require("fs");
             if (fs.existsSync("config.xml")) {
               let content = fs.readFileSync("config.xml", "utf8");
-              // Strip plugin tags related to admobpro/rjfun
               content = content.replace(/<plugin[^>]*admobpro[^>]*\/>/gi, "");
               content = content.replace(/<plugin[^>]*admobpro[^>]*>[\s\S]*?<\/plugin>/gi, "");
               content = content.replace(/<feature[^>]*AdMob[^>]*>[\s\S]*?<\/feature>/gi, "");
@@ -55,25 +54,17 @@ jobs:
           rm -rf platforms/
           rm -rf plugins/
 
-      - name: Inject AdMob IDs & Settings
+      - name: Safe JS Inject (Prevent AdMob Crash)
         run: |
           node -e '
             const fs = require("fs");
-            const replaceInFile = (filePath, search, replacement) => {
-              if (fs.existsSync(filePath)) {
-                let content = fs.readFileSync(filePath, "utf8");
-                content = content.replaceAll(search, replacement);
-                fs.writeFileSync(filePath, content, "utf8");
-              }
-            };
-
-            const appId = "ca-app-pub-9275319584599936~2082703007";
-            const bannerId = "ca-app-pub-9275319584599936/4158202000";
-            const interstitialId = "ca-app-pub-9275319584599936/8947494259";
-
-            replaceInFile("config.xml", "ca-app-pub-9275319584599936~2082703007", appId);
-            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/4158202000", bannerId);
-            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/8947494259", interstitialId);
+            if (fs.existsSync("www/js/index.js")) {
+              let content = fs.readFileSync("www/js/index.js", "utf8");
+              // Safely handle AdMob plugin calls so JS doesn't crash the app
+              content = content.replace(/window\.plugins\.AdMob/g, "(window.plugins && window.plugins.AdMob)");
+              content = content.replace(/AdMob\./g, "window.AdMob && AdMob.");
+              fs.writeFileSync("www/js/index.js", content, "utf8");
+            }
           '
 
       - name: Add Fresh Android Platform
@@ -90,10 +81,11 @@ jobs:
           echo "cdvBuildToolsVersion=33.0.2" >> platforms/android/gradle.properties
           echo "cdvCompileSdkVersion=34" >> platforms/android/gradle.properties
           echo "cdvTargetSdkVersion=34" >> platforms/android/gradle.properties
+          echo "cdvMinSdkVersion=24" >> platforms/android/gradle.properties
 
-      - name: Purge Legacy AdMob Java Files Right Before Build
+      - name: Purge Legacy AdMob Java Files
         run: |
-          echo "=== ABSOLUTE PURGE OF ADMOB PLUGIN JAVA FILES ==="
+          echo "=== PURGING ADMOB JAVA FILES ==="
           find . -type f -name "AdMobPlugin.java" -delete
           find . -type d -name "rjfun" -exec rm -rf {} + || true
 
