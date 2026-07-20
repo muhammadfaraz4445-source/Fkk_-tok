@@ -37,9 +37,9 @@
     <preference name="DisallowOverscroll" value="true" />
     <preference name="Orientation" value="portrait" />
 
-    <!-- Google AdMob Plus Plugin Configuration -->
+    <!-- Google AdMob Plus Plugin Configuration with your Actual App ID -->
     <plugin name="cordova-plugin-admob-plus">
-        <variable name="APP_ID_ANDROID" value="ca-app-pub-3940256099942544~3347511713" />
+        <variable name="APP_ID_ANDROID" value="ca-app-pub-9275319584599936~2082703007" />
         <variable name="APP_ID_IOS" value="ca-app-pub-3940256099942544~1458002511" />
     </plugin>
     
