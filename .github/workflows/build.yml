@@ -3,15 +3,11 @@ name: Build Cordova Mobile App
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
   build-android:
-    name: Build Android APK
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -32,19 +28,15 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Cordova CLI
-        run: npm install -g cordova@12.0.0
-
-      - name: Install Project Dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Install Required Android Build Tools 33.0.2
+      - name: Install Cordova CLI & Dependencies
         run: |
-          yes | sdkmanager "build-tools;33.0.2" "platforms;android-33" || true
+          npm install -g cordova@12.0.0
+          npm install --legacy-peer-deps
 
-      - name: Build Web Assets
+      - name: Install Android SDK Packages
         run: |
-          npm run build || true
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-33" "build-tools;33.0.2"
 
       - name: Inject Exact AdMob IDs
         run: |
@@ -74,9 +66,11 @@ jobs:
           cordova platform rm android || true
           cordova platform add android@12.0.0
 
+      - name: Fix Gradle Permissions
+        run: |
+          chmod +x platforms/android/gradlew || true
+
       - name: Build Android App (Debug)
-        env:
-          CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL: "https://services.gradle.org/distributions/gradle-8.7-bin.zip"
         run: |
           cordova build android --debug
 
