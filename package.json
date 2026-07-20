@@ -1,0 +1,21 @@
+{
+  "name": "com.aistudio.shortvideoadmob",
+  "displayName": "Cordova Short Video App",
+  "version": "1.0.0",
+  "description": "Short video app with AdMob",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ecosystem:cordova"
+  ],
+  "author": "AI Studio",
+  "license": "Apache-2.0",
+  "cordova": {
+    "plugins": {},
+    "platforms": [
+      "android"
+    ]
+  }
+}
