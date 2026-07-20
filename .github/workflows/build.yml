@@ -1,74 +1,28 @@
-name: Build Cordova Mobile App
+name: Check System Info
 
 on:
-  push:
-    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
-  build-android:
+  check-system:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Check Java Version
+        run: java -version
 
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+      - name: Check Gradle Version
+        run: gradle -version
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Check Android SDK Home
+        run: echo "ANDROID_HOME is $ANDROID_HOME"
 
-      - name: Install Cordova CLI
-        run: npm install -g cordova@12.0.0
-
-      - name: Install Project Dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Inject AdMob IDs
+      - name: List SDK Tools
         run: |
-          node -e '
-            const fs = require("fs");
-            const replaceInFile = (filePath, search, replacement) => {
-              if (fs.existsSync(filePath)) {
-                let content = fs.readFileSync(filePath, "utf8");
-                content = content.replaceAll(search, replacement);
-                fs.writeFileSync(filePath, content, "utf8");
-              }
-            };
+          if [ -d "$ANDROID_HOME/cmdline-tools" ]; then
+            ls -R $ANDROID_HOME/cmdline-tools
+          else
+            echo "Cmdline-tools not found at $ANDROID_HOME"
+          fi
 
-            const appId = "ca-app-pub-9275319584599936~2082703007";
-            const bannerId = "ca-app-pub-9275319584599936/4158202000";
-            const interstitialId = "ca-app-pub-9275319584599936/8947494259";
-
-            replaceInFile("config.xml", "ca-app-pub-9275319584599936~2082703007", appId);
-            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/4158202000", bannerId);
-            replaceInFile("www/js/index.js", "ca-app-pub-9275319584599936/8947494259", interstitialId);
-          '
-
-      - name: Setup Android SDK Components
-        run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;33.0.2" "platforms;android-33"
-
-      - name: Add Android Platform
-        run: |
-          cordova platform rm android || true
-          cordova platform add android@12.0.0
-
-      - name: Build Android APK
-        run: |
-          cordova build android --debug
-        env:
-          CORDOVA_ANDROID_GRADLE_DISTRIBUTION_URL: "https://services.gradle.org/distributions/gradle-8.7-bin.zip"
-
-      - name: Upload Android APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: cordova-android-apk
-          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Check Node Version
+        run: node -v
