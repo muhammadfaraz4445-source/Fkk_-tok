@@ -38,6 +38,10 @@ jobs:
           cordova platform add android --nosave
 
       - name: Build Android App (Debug)
+        env:
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
         run: |
           cordova build android --no-telemetry --device
 
@@ -69,5 +73,9 @@ jobs:
           cordova platform add ios --nosave
 
       - name: Build iOS App (Simulator / Debug)
+        env:
+          ADMOB_APP_ID: ${{ secrets.ADMOB_APP_ID }}
+          ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+          ADMOB_INTERSTITIAL_ID: ${{ secrets.ADMOB_INTERSTITIAL_ID }}
         run: |
           cordova build ios --no-telemetry --emulator
