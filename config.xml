@@ -37,15 +37,15 @@
         <allow-intent href="itms-apps:*" />
     </platform>
 
-    <!-- UI Preferences for Modern Mobile Layout -->
+    <!-- UI Preferences -->
     <preference name="Fullscreen" value="true" />
     <preference name="StatusBarOverlaysWebView" value="true" />
     <preference name="StatusBarStyle" value="lightcontent" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="Orientation" value="portrait" />
 
-    <!-- Google AdMob Plus Plugin Configuration -->
-    <plugin name="cordova-plugin-admob-plus">
+    <!-- Google AdMob Plus Plugin (Fixed Version to prevent NullPointer Crash) -->
+    <plugin name="cordova-plugin-admob-plus" spec="1.28.0">
         <variable name="APP_ID_ANDROID" value="ca-app-pub-9275319584599936~2082703007" />
         <variable name="APP_ID_IOS" value="ca-app-pub-3940256099942544~1458002511" />
     </plugin>
