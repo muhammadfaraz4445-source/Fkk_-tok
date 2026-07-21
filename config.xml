@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.aistudio.shortvideoadmob" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget id="com.aistudio.shortvideoadmob" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>Cordova Short Video App</name>
     <description>
         A sleek mobile app featuring full-screen short vertical videos with AdMob banner and interstitial ads, fully ready for Cordova and GitHub Actions builds.
@@ -23,6 +23,13 @@
     <platform name="android">
         <allow-intent href="market:*" />
         <preference name="KeepRunning" value="true" />
+
+        <!-- AdMob App ID Injection for Android Manifest -->
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <meta-data
+                android:name="com.google.android.gms.ads.APPLICATION_ID"
+                android:value="ca-app-pub-9275319584599936~2082703007" />
+        </config-file>
     </platform>
     
     <platform name="ios">
@@ -37,13 +44,13 @@
     <preference name="DisallowOverscroll" value="true" />
     <preference name="Orientation" value="portrait" />
 
-    <!-- Google AdMob Plus Plugin Configuration with your Actual App ID -->
+    <!-- Google AdMob Plus Plugin Configuration -->
     <plugin name="cordova-plugin-admob-plus">
         <variable name="APP_ID_ANDROID" value="ca-app-pub-9275319584599936~2082703007" />
         <variable name="APP_ID_IOS" value="ca-app-pub-3940256099942544~1458002511" />
     </plugin>
     
-    <!-- Additional standard plugins for optimal webview performance and gestures -->
+    <!-- Additional standard plugins -->
     <plugin name="cordova-plugin-statusbar" />
     <plugin name="cordova-plugin-splashscreen" />
 </widget>
