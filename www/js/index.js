@@ -3,23 +3,34 @@ document.addEventListener('deviceready', onDeviceReady, false);
 function onDeviceReady() {
     console.log('Running cordova-' + cordova.platformId + '@' + cordova.version);
 
-    // AdMob Setup
-    if (window.admob) {
-        // 1. Banner Ad
-        const banner = new admob.BannerAd({
-            adUnitId: 'ca-app-pub-9275319584599936/4158202000',
-            position: 'bottom'
-        });
+    // Safe initialization check for AdMob
+    setTimeout(initAdMob, 1000);
+}
 
-        banner.show().catch(err => console.error('Banner Error:', err));
+async function initAdMob() {
+    if (typeof admob !== 'undefined' && admob) {
+        try {
+            // Start AdMob SDK
+            await admob.start();
 
-        // 2. Interstitial Ad
-        const interstitial = new admob.InterstitialAd({
-            adUnitId: 'ca-app-pub-9275319584599936/8947494259'
-        });
+            // 1. Banner Ad
+            const banner = new admob.BannerAd({
+                adUnitId: 'ca-app-pub-9275319584599936/4158202000',
+                position: 'bottom'
+            });
+            await banner.show();
 
-        interstitial.load().then(() => {
-            return interstitial.show();
-        }).catch(err => console.error('Interstitial Error:', err));
+            // 2. Interstitial Ad
+            const interstitial = new admob.InterstitialAd({
+                adUnitId: 'ca-app-pub-9275319584599936/8947494259'
+            });
+            await interstitial.load();
+            await interstitial.show();
+
+        } catch (error) {
+            console.log('AdMob initialization error:', error);
+        }
+    } else {
+        console.log('AdMob plugin is not available yet.');
     }
 }
